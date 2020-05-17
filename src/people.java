@@ -33,19 +33,37 @@ public class people {
     public String toString(){
         StringBuilder res;
         if(hasCompute){
-            res = new StringBuilder("Complex = " + complex + "    Error = " + error + "\n");
+            res = new StringBuilder("Complex = " + complex + "\tError = " + error + "\t");
         }else{
-            res = new StringBuilder("Complex = " + complex + "\n");
+            res = new StringBuilder("Complex = " + complex + "\t");
         }
-        for(boolean i:this.expression){
+        res.append("errorSeq: \t");
+        for (boolean i:this.errorSeq){
             if(i){
                 res.append(1).append(" ");
             }else{
                 res.append(0).append(" ");
             }
-
         }
-        return res.toString();
+        if(hasCompute){
+            res.append("\texpression: \t");
+            for(boolean i:this.expression){
+                if(i){
+                    res.append(1).append(" ");
+                }else{
+                    res.append(0).append(" ");
+                }
+            }
+        }else{
+            res.append("\tThis people has not been computed!");
+        }
+
+        return res.append("\n").toString();
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
     public int getAdaptation(){

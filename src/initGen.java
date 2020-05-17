@@ -9,17 +9,17 @@ public class initGen {
 
     static LinkedList<people> init(int n){
         LinkedList<people> res=new LinkedList<>();
+        Random ran=new Random(12345);
         for (int i = 0; i < n; i++) {
-            res.add(randomPeople());
+            res.add(randomPeople(ran));
         }
         return res;
     }
 
-    private static people randomPeople() {
-        Random ran=new Random(12345);
-        boolean[] res=new boolean[1000];
-        for (int i = 0; i < 1000; i++) {
-            res[i]=(ran.nextInt(2)==1);
+    private static people randomPeople(Random ran) {
+        boolean[] res=new boolean[Genetic.MAX_LENGTH];
+        for (int i = 0; i < Genetic.MAX_LENGTH; i++) {
+            res[i]=ran.nextBoolean();
         }
         return new people(res);
     }

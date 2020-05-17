@@ -6,7 +6,7 @@ import java.util.concurrent.*;
  */
 public class Main {
 
-    public static void run(){
+    public static void run() throws InterruptedException {
         ThreadPoolExecutor thpool=new ThreadPoolExecutor(100,
                 Integer.MAX_VALUE,
                 60L,

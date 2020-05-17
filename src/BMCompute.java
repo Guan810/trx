@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author 关凯宁
@@ -9,10 +9,12 @@ import java.util.concurrent.Callable;
 public class BMCompute implements Runnable {
     private final Genetic gen;
     private final people p;
+    private final CountDownLatch count;
 
-    public BMCompute(Genetic gen,people p) {
+    public BMCompute(Genetic gen, people p, CountDownLatch count1) {
         this.gen = gen;
         this.p=p;
+        this.count = count1;
     }
 
     public static void compute(boolean[] s, people p) {
@@ -95,6 +97,17 @@ public class BMCompute implements Runnable {
         return res;
     }
 
+    @Override
+    public void run() {
+        if(!p.hasCompute){
+            compute(gen.getTarget(),p);
+            p.hasCompute=true;
+        }
+        gen.addToTotalAdaptation(p.getAdaptation());
+        gen.setMaxAdaptation(p.adaptation);
+        count.countDown();
+    }
+
     public static void main(String[] args) {
         byte[] a={0,0,1,1,0,1};
         boolean[] b=new boolean[6];
@@ -102,13 +115,6 @@ public class BMCompute implements Runnable {
         people bb=new people(b);
         compute(change(a),bb);
         System.out.println(bb.toString());
-    }
-
-    @Override
-    public void run() {
-        compute(gen.getTarget(),p);
-        p.hasCompute=true;
-        gen.addToTotalAdaptation(p.getAdaptation());
     }
 }
 
