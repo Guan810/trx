@@ -12,18 +12,25 @@ public class Genetic {
      * 种群中people的编号长度，即errorSeq的长度
      */
     public final int PEOPLE_LENGTH;
-    private LinkedList<people> population;
-    private int gen;
-    private boolean[] target;
-    private int totalAdaptation;
-    private double avgAdaptation;
-    private people bestPeople;
-    private LinkedList<people> newPopu;
-
+    /**目标序列*/
+    private final boolean[] target;
     /**
      * 添加一个TreeSet来维护适应度较大的个体，同时便于输出
      */
     private final GoodPeople goodPeople;
+    /**
+     * 当前种群的所有个体集合
+     */
+    private LinkedList<people> population;
+    /**
+     * 当前种群的代数
+     */
+    private int gen;
+    private int totalAdaptation;
+    private double avgAdaptation;
+    private people bestPeople;
+    /**备用列表*/
+    private LinkedList<people> newPopu;
 
     public Genetic(int peopleLength,  LinkedList<people> population, int gen, boolean[] target, int goodPeopleLast) {
         PEOPLE_LENGTH = peopleLength;
@@ -39,6 +46,11 @@ public class Genetic {
         this(target.length, population,1,target, goodPeopleLast);
     }
 
+
+    /**
+     * 一个种群整体进行BM算法的方法，采用多线程
+     */
+    @SuppressWarnings("可能存在未知问题")
     public void computeAdapation(ExecutorService es) throws InterruptedException {
         CountDownLatch count=new CountDownLatch(population.size());
         for(people p:population){
@@ -48,9 +60,11 @@ public class Genetic {
         avgAdaptation=(double)totalAdaptation/population.size();
     }
 
+    /**
+     * 选择与交叉函数
+     */
     public void selection(ExecutorService es) throws InterruptedException {
         setTotalAdaptationToZero();
-
         double[] proTable=new double[population.size()];
         for (int i = 0; i < population.size(); i++) {
             people temp=population.get(0);
@@ -76,12 +90,18 @@ public class Genetic {
     @Override
     public String toString(){
         StringBuilder res=new StringBuilder("第"+gen+"代：\n");
-        res.append("全部People: \n");
-        for(people p:population){
-            res.append(p.toString()).append("\n");
+        res.append("最好的一个：\n");
+        if(this.bestPeople==null){
+            res.append("Threre is no best now. This gen has just been built!\n");
+        }else{
+            res.append(this.bestPeople.toString()).append("\n");
         }
         res.append("good people: \n");
         for(people p:goodPeople){
+            res.append(p.toString()).append("\n");
+        }
+        res.append("全部People: \n");
+        for(people p:population){
             res.append(p.toString()).append("\n");
         }
         return res.toString();
@@ -89,6 +109,12 @@ public class Genetic {
 
     public String toSimplyString(){
         StringBuilder res=new StringBuilder("第"+gen+"代：\n");
+        res.append("最好的一个：\n");
+        if(this.bestPeople==null){
+            res.append("Threre is no best now. This gen has just been built!\n");
+        }else{
+            res.append(this.bestPeople.toString()).append("\n");
+        }
         res.append("good people: \n");
         for(people p:goodPeople){
             res.append(p.toString()).append("\n");
@@ -112,16 +138,12 @@ public class Genetic {
         return totalAdaptation;
     }
 
-    public boolean[] getTarget() {
-        return target;
-    }
-
-    public void setTarget(boolean[] target) {
-        this.target = target;
-    }
-
     public void setTotalAdaptation(int totalAdaptation) {
         this.totalAdaptation = totalAdaptation;
+    }
+
+    public boolean[] getTarget() {
+        return target;
     }
 
     public double getAvgAdaptation() {
@@ -159,8 +181,9 @@ public class Genetic {
     public void setGen(int gen) {
         this.gen = gen;
     }
-    public synchronized void setMaxAdaptation(people bestPeople) {
-        if(bestPeople.getAdaptation()>this.bestPeople.getAdaptation()){
+
+    public synchronized void setBestPeople(people bestPeople) {
+        if(this.bestPeople==null||bestPeople.getAdaptation()>this.bestPeople.getAdaptation()){
             this.bestPeople = bestPeople;
         }
     }

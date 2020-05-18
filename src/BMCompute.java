@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
+import java.util.LinkedList;
+import java.util.concurrent.*;
 
 /**
  * @author 关凯宁
@@ -103,21 +104,40 @@ public class BMCompute implements Runnable {
             compute(gen.getTarget(),p);
             p.hasCompute=true;
             gen.getGoodPeople().add(p);
+            gen.setBestPeople(p);
         }
         gen.addToTotalAdaptation(p.getAdaptation());
-        gen.setMaxAdaptation(p);
         count.countDown();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        ThreadPoolExecutor thpool=new ThreadPoolExecutor(100,
+                500,
+                60L,
+                TimeUnit.SECONDS,
+                new LinkedBlockingDeque<>());
         byte[] a={0,0,0,0,1,1,1,0,1,0};
-        boolean[] b=new boolean[10];
-        Arrays.fill(b,false);
-        b[9]=true;
-        b[7]=true;
-        people bb=new people(b);
-        compute(change(a),bb);
-        bb.hasCompute=true;
+        String s="0 0 0 0 0 0 0 0 0 1";
+        String[] ss=s.split(" ");
+        byte[] b=new byte[ss.length];
+        for (int i = 0; i < ss.length; i++) {
+            b[i]=Byte.parseByte(ss[i]);
+        }
+        people bb=new people(change(b));
+        LinkedList<people> in=new LinkedList<>();
+        Genetic gen=new Genetic(in,change(a), 10);
+//        Genetic gen=new Genetic(initGen.init(1000,10),change(a), 10);
+//        in.add(bb);
+//        gen.computeAdapation(thpool);
+        System.out.println(gen.toSimplyString());
+//        bb=gen.getBestPeople();
+        if(!bb.hasCompute){
+            compute(gen.getTarget(),bb);
+            bb.hasCompute=true;
+            gen.getGoodPeople().add(bb);
+            gen.setBestPeople(bb);
+        }
+        gen.addToTotalAdaptation(bb.getAdaptation());
         System.out.println(bb.toString());
     }
 }

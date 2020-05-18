@@ -6,6 +6,8 @@ import java.util.Objects;
 /**
  * @author 关凯宁
  * @date 2020/5/17 10:12
+ *
+ * 个体类
  */
 public class people implements Comparable<people> , Cloneable{
 

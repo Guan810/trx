@@ -4,6 +4,7 @@ import java.util.Random;
 /**
  * @author 关凯宁
  * @date 2020/5/17 14:29
+ * 用来生成随机种群，返回值是一个LinkedList类
  */
 public class initGen {
 

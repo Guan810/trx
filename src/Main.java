@@ -3,6 +3,7 @@ import java.util.concurrent.*;
 /**
  * @author 关凯宁
  * @date 2020/5/17 10:12
+ * 主测试函数
  */
 public class Main {
 
@@ -11,20 +12,13 @@ public class Main {
                 Integer.MAX_VALUE,
                 60L,
                 TimeUnit.SECONDS,
-                new SynchronousQueue<>());
-        Genetic gen=new Genetic(initGen.init(100,target.length),target, 20);
+                new LinkedBlockingDeque<>());
+        Genetic gen=new Genetic(initGen.init(10000,target.length),target, 10);
         gen.computeAdapation(thpool);
-        System.out.println(gen.toSimplyString());
-//        long begin,end;
-        while(gen.getGen()<30){
-//            begin=System.nanoTime();
+        System.out.println(gen.toString());
+        while(gen.getGen()<300){
             gen.selection(thpool);
-//            end=System.nanoTime();
-//            System.out.println(end-begin);
-//            begin=System.nanoTime();
             gen.computeAdapation(thpool);
-//            end=System.nanoTime();
-//            System.out.println(end-begin);
             System.out.println(gen.toSimplyString());
         }
     }

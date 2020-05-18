@@ -5,6 +5,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * @author 关凯宁
  * @date 2020/5/18 11:18
+ * 在选择时采取的多线程线程类
  */
 public class Select implements Runnable{
     private final static double PC1 =0.9;
@@ -64,16 +65,11 @@ public class Select implements Runnable{
             int startPoint=ran.nextInt(gen.PEOPLE_LENGTH);
             int crossLength=ran.nextInt(gen.PEOPLE_LENGTH-startPoint+1);
             people newTem0= (people) tem[0].clone();
-            people newTem1= (people) tem[1].clone();
             System.arraycopy(tem[1].errorSeq, startPoint, newTem0.errorSeq, startPoint, crossLength);
-            System.arraycopy(tem[0].errorSeq,startPoint,newTem1.errorSeq,startPoint,crossLength);
             newTem0.hasCompute=false;
-            newTem1.hasCompute=false;
             gen.addPeopleTonewPopu(newTem0);
-            gen.addPeopleTonewPopu(newTem1);
         }else{
-            gen.addPeopleTonewPopu(tem[0]);
-            gen.addPeopleTonewPopu(tem[1]);
+            gen.addPeopleTonewPopu(maxOne);
         }
 
     }
