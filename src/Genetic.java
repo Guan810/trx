@@ -8,6 +8,9 @@ import java.util.concurrent.*;
  * 该Genetic类是种群类，本算法中的一切行为均是基于该类进行。
  */
 public class Genetic {
+    /**
+     * 种群中people的编号长度，即errorSeq的长度
+     */
     public final int PEOPLE_LENGTH;
     private int numOfPopu;
     private LinkedList<people> population;
@@ -18,20 +21,26 @@ public class Genetic {
     private int maxAdaptation;
     private LinkedList<people> newPopu;
 
+    /**
+     * 添加一个TreeSet来维护适应度较大的个体，同时便于输出
+     */
+    private final TreeSet<people> goodPeople = new TreeSet<>();
+    private final int goodPeopleLast;
 
-    public Genetic(int peopleLength, int numOfPopu, LinkedList<people> population, int gen, boolean[] target) {
+    public Genetic(int peopleLength, int numOfPopu, LinkedList<people> population, int gen, boolean[] target, int goodPeopleLast) {
         PEOPLE_LENGTH = peopleLength;
         this.numOfPopu = numOfPopu;
         this.population = population;
         this.gen = gen;
         this.target = target;
+        this.goodPeopleLast = goodPeopleLast;
         this.totalAdaptation=0;
         this.maxAdaptation=0;
 
     }
 
-    public Genetic(LinkedList<people> population, boolean[] target) {
-        this(target.length, population.size(),population,1,target);
+    public Genetic(LinkedList<people> population, boolean[] target, int goodPeopleLast) {
+        this(target.length, population.size(),population,1,target, goodPeopleLast);
     }
 
     public void computeAdapation(ExecutorService es) throws InterruptedException {
@@ -54,14 +63,15 @@ public class Genetic {
             }
         }
         newPopu = new LinkedList<>();
-        CountDownLatch count=new CountDownLatch(numOfPopu);
+        CountDownLatch count=new CountDownLatch(numOfPopu-goodPeopleLast);
         Random ran=new Random(System.currentTimeMillis());
-        for (int i = 0; i < numOfPopu; i++) {
+        for (int i = 0; i < numOfPopu-goodPeopleLast; i++) {
             es.execute(new Select(proTable,count, ran, this));
         }
         count.await();
         population=newPopu;
         newPopu=null;
+        population.addAll(goodPeople);
         gen++;
     }
 
@@ -72,18 +82,21 @@ public class Genetic {
         for(people p:population){
             res.append(p.toString()).append("\n");
         }
-//        res.append("good people: \n");
-//        for(people p:LinkedList){
-//            res.append(p.toString()).append("\n");
-//        }
+        res.append("good people: \n");
+        for(people p:goodPeople){
+            res.append(p.toString()).append("\n");
+        }
         return res.toString();
     }
 
-//    public String toSimplyString(){
-//        StringBuilder res=new StringBuilder("第"+gen+"代：\n");
-//        res.append(LinkedList.getFirst().toString());
-//        return res.toString();
-//    }
+    public String toSimplyString(){
+        StringBuilder res=new StringBuilder("第"+gen+"代：\n");
+        res.append("good people: \n");
+        for(people p:goodPeople){
+            res.append(p.toString()).append("\n");
+        }
+        return res.toString();
+    }
 
     public synchronized void addPeopleTonewPopu(people p){
         newPopu.add(p);
@@ -162,6 +175,13 @@ public class Genetic {
         }
     }
 
+    public synchronized void addToGoodPeople(people p) {
+        goodPeople.add(p);
+        if(goodPeople.size()>goodPeopleLast){
+            goodPeople.pollLast();
+        }
+    }
+
 
     public static void main(String[] args) throws InterruptedException {
         byte[] b={0,0,1,0,0,0,1,0,0,1};
@@ -170,7 +190,7 @@ public class Genetic {
                 60L,
                 TimeUnit.SECONDS,
                 new SynchronousQueue<>());
-        Genetic a=new Genetic(initGen.init(100,b.length),BMCompute.change(b));
+        Genetic a=new Genetic(initGen.init(100,b.length),BMCompute.change(b), 2);
         a.computeAdapation(thpool);
         System.out.println(a.toString());
         for (int i = 0; i < 20; i++) {

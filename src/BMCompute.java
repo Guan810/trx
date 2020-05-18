@@ -102,6 +102,7 @@ public class BMCompute implements Runnable {
         if(!p.hasCompute){
             compute(gen.getTarget(),p);
             p.hasCompute=true;
+            gen.addToGoodPeople(p);
         }
         gen.addToTotalAdaptation(p.getAdaptation());
         gen.setMaxAdaptation(p.adaptation);
@@ -109,9 +110,11 @@ public class BMCompute implements Runnable {
     }
 
     public static void main(String[] args) {
-        byte[] a={0,0,1,1,0,1};
-        boolean[] b=new boolean[7];
+        byte[] a={0,0,0,0,1,1,1,0,1,0};
+        boolean[] b=new boolean[10];
         Arrays.fill(b,false);
+        b[9]=true;
+        b[7]=true;
         people bb=new people(b);
         compute(change(a),bb);
         bb.hasCompute=true;

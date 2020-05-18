@@ -9,7 +9,7 @@ public class initGen {
 
     static LinkedList<people> init(int n,int len){
         LinkedList<people> res=new LinkedList<>();
-        Random ran=new Random(12345);
+        Random ran=new Random(System.currentTimeMillis());
         for (int i = 0; i < n; i++) {
             res.add(randomPeople(ran,len));
         }

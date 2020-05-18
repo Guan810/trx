@@ -12,18 +12,18 @@ public class Main {
                 60L,
                 TimeUnit.SECONDS,
                 new SynchronousQueue<>());
-        Genetic gen=new Genetic(initGen.init(10,target.length),target);
+        Genetic gen=new Genetic(initGen.init(2000,target.length),target, 10);
         gen.computeAdapation(thpool);
-        System.out.println(gen.toString());
-        while(gen.getGen()<10){
+        System.out.println(gen.toSimplyString());
+        while(gen.getGen()<200){
             gen.selection(thpool);
             gen.computeAdapation(thpool);
-            System.out.println(gen.toString());
+            System.out.println(gen.toSimplyString());
         }
     }
 
     public static void main(String[] args) {
-        byte[] a={1,0,0,0,1,1,1,0,1,0};
+        byte[] a={0,0,0,0,1,1,1,0,1,0};
         try {
             run(BMCompute.change(a));
         } catch (InterruptedException e) {
