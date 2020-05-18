@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
@@ -25,23 +26,16 @@ public class Select implements Runnable{
         this.tem=new people[2];
     }
 
-    public void invoke() {
-        double a=ran.nextDouble();
-        tem[0]=find(a,proTable);
-        a=ran.nextDouble();
-        tem[1]=find(a,proTable);
-    }
-
     private people find(double a, double[] proTable) {
-        int init= (int) Math.floor(a*gen.getNumOfPopu());
+        int init= (int) Math.floor(a*gen.getPopulation().size());
         while (init>=0&&proTable[init]>a){
             if(init==0){
                 return gen.getPopulation().getFirst();
             }
             init--;
         }
-        while(init<gen.getNumOfPopu()&&proTable[init]<=a){
-            if (init==gen.getNumOfPopu()-1){
+        while(init<gen.getPopulation().size()&&proTable[init]<=a){
+            if (init==gen.getPopulation().size()-1){
                 return gen.getPopulation().getLast();
             }
             init++;
@@ -49,42 +43,46 @@ public class Select implements Runnable{
         return gen.getPopulation().get(init);
     }
 
+
     @Override
     public void run() {
-        this.invoke();
-        gen.addPeopleTonewPopu(cross(tem));
+        double a=ran.nextDouble();
+        tem[0]=find(a,proTable);
+        a=ran.nextDouble();
+        tem[1]=find(a,proTable);
+        try {
+            cross(tem);
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
         count.countDown();
     }
 
-    private people cross(people[] tem) {
+    private void cross(people[] tem) throws CloneNotSupportedException {
         people maxOne=(tem[0].getAdaptation()>tem[1].getAdaptation())?tem[0]:tem[1];
-        people res;
         if(ran.nextDouble()<selfAdapt(maxOne)){
             int startPoint=ran.nextInt(gen.PEOPLE_LENGTH);
             int crossLength=ran.nextInt(gen.PEOPLE_LENGTH-startPoint+1);
-            boolean[] newErrorSeq = tem[0].errorSeq.clone();
-            if (crossLength - startPoint > 0) {
-                System.arraycopy(tem[1].errorSeq, startPoint, newErrorSeq, startPoint, crossLength - startPoint);
-            }
-            res=new people(newErrorSeq);
+            people newTem0= (people) tem[0].clone();
+            people newTem1= (people) tem[1].clone();
+            System.arraycopy(tem[1].errorSeq, startPoint, newTem0.errorSeq, startPoint, crossLength);
+            System.arraycopy(tem[0].errorSeq,startPoint,newTem1.errorSeq,startPoint,crossLength);
+            newTem0.hasCompute=false;
+            newTem1.hasCompute=false;
+            gen.addPeopleTonewPopu(newTem0);
+            gen.addPeopleTonewPopu(newTem1);
         }else{
-            res=maxOne;
+            gen.addPeopleTonewPopu(tem[0]);
+            gen.addPeopleTonewPopu(tem[1]);
         }
-        double mutatuPro=mutatu(res);
-        Random ra=new Random(ran.nextLong());
-        for (int i = 0; i< gen.PEOPLE_LENGTH; i++) {
-            if(ra.nextDouble()<mutatuPro){
-                res.errorSeq[i]=!res.errorSeq[i];
-            }
-        }
-        return res;
+
     }
 
     private double mutatu(people b) {
         if(b.getAdaptation()<gen.getAvgAdaptation()){
             return PM1;
         }else{
-            return PM1-((PM1-PM2)*(gen.getMaxAdaptation()-b.getAdaptation())/(gen.getMaxAdaptation()-gen.getAvgAdaptation()));
+            return PM1-((PM1-PM2)*(gen.getBestPeople().getAdaptation()-b.getAdaptation())/(gen.getBestPeople().getAdaptation()-gen.getAvgAdaptation()));
         }
     }
 
@@ -92,16 +90,11 @@ public class Select implements Runnable{
         if(maxOne.getAdaptation()<gen.getAvgAdaptation()){
             return PC1;
         }else{
-            return PC1-((PC1-PC2)*(maxOne.getAdaptation()-gen.getAvgAdaptation())/(gen.getMaxAdaptation()-gen.getAvgAdaptation()));
+            return PC1-((PC1-PC2)*(maxOne.getAdaptation()-gen.getAvgAdaptation())/(gen.getBestPeople().getAdaptation()-gen.getAvgAdaptation()));
         }
     }
 
     public static void main(String[] args) {
-        Random ran=new Random();
-        int i=0;
-        while(i<10){
-            i++;
-            System.out.println(ran.nextInt(2));
-        }
+
     }
 }

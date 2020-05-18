@@ -12,49 +12,47 @@ public class Genetic {
      * 种群中people的编号长度，即errorSeq的长度
      */
     public final int PEOPLE_LENGTH;
-    private int numOfPopu;
     private LinkedList<people> population;
     private int gen;
     private boolean[] target;
     private int totalAdaptation;
     private double avgAdaptation;
-    private int maxAdaptation;
+    private people bestPeople;
     private LinkedList<people> newPopu;
 
     /**
      * 添加一个TreeSet来维护适应度较大的个体，同时便于输出
      */
-    private final TreeSet<people> goodPeople = new TreeSet<>();
-    private final int goodPeopleLast;
+    private final GoodPeople goodPeople;
 
-    public Genetic(int peopleLength, int numOfPopu, LinkedList<people> population, int gen, boolean[] target, int goodPeopleLast) {
+    public Genetic(int peopleLength,  LinkedList<people> population, int gen, boolean[] target, int goodPeopleLast) {
         PEOPLE_LENGTH = peopleLength;
-        this.numOfPopu = numOfPopu;
         this.population = population;
         this.gen = gen;
         this.target = target;
-        this.goodPeopleLast = goodPeopleLast;
         this.totalAdaptation=0;
-        this.maxAdaptation=0;
-
+        this.bestPeople=null;
+        goodPeople=new GoodPeople(goodPeopleLast);
     }
 
     public Genetic(LinkedList<people> population, boolean[] target, int goodPeopleLast) {
-        this(target.length, population.size(),population,1,target, goodPeopleLast);
+        this(target.length, population,1,target, goodPeopleLast);
     }
 
     public void computeAdapation(ExecutorService es) throws InterruptedException {
-        CountDownLatch count=new CountDownLatch(numOfPopu);
+        CountDownLatch count=new CountDownLatch(population.size());
         for(people p:population){
             es.execute(new BMCompute(this,p,count));
         }
         count.await();
-        avgAdaptation=(double)totalAdaptation/numOfPopu;
+        avgAdaptation=(double)totalAdaptation/population.size();
     }
 
     public void selection(ExecutorService es) throws InterruptedException {
-        double[] proTable=new double[numOfPopu];
-        for (int i = 0; i < numOfPopu; i++) {
+        setTotalAdaptationToZero();
+
+        double[] proTable=new double[population.size()];
+        for (int i = 0; i < population.size(); i++) {
             people temp=population.get(0);
             if(i==0){
                 proTable[0]=(double) temp.getAdaptation()/totalAdaptation;
@@ -63,9 +61,9 @@ public class Genetic {
             }
         }
         newPopu = new LinkedList<>();
-        CountDownLatch count=new CountDownLatch(numOfPopu-goodPeopleLast);
+        CountDownLatch count=new CountDownLatch(population.size()-goodPeople.size());
         Random ran=new Random(System.currentTimeMillis());
-        for (int i = 0; i < numOfPopu-goodPeopleLast; i++) {
+        for (int i = 0; i < population.size()-goodPeople.size(); i++) {
             es.execute(new Select(proTable,count, ran, this));
         }
         count.await();
@@ -134,24 +132,16 @@ public class Genetic {
         this.avgAdaptation = avgAdaptation;
     }
 
-    public int getMaxAdaptation() {
-        return maxAdaptation;
+    public people getBestPeople() {
+        return bestPeople;
     }
 
-    public LinkedList getNewPopu() {
+    public LinkedList<people> getNewPopu() {
         return newPopu;
     }
 
     public void setNewPopu(LinkedList<people> newPopu) {
         this.newPopu = newPopu;
-    }
-
-    public int getNumOfPopu() {
-        return numOfPopu;
-    }
-
-    public void setNumOfPopu(int numOfPopu) {
-        this.numOfPopu = numOfPopu;
     }
 
     public LinkedList<people> getPopulation() {
@@ -169,19 +159,15 @@ public class Genetic {
     public void setGen(int gen) {
         this.gen = gen;
     }
-    public synchronized void setMaxAdaptation(int maxAdaptation) {
-        if(maxAdaptation>this.maxAdaptation){
-            this.maxAdaptation = maxAdaptation;
+    public synchronized void setMaxAdaptation(people bestPeople) {
+        if(bestPeople.getAdaptation()>this.bestPeople.getAdaptation()){
+            this.bestPeople = bestPeople;
         }
     }
 
-    public synchronized void addToGoodPeople(people p) {
-        goodPeople.add(p);
-        if(goodPeople.size()>goodPeopleLast){
-            goodPeople.pollLast();
-        }
+    public GoodPeople getGoodPeople() {
+        return goodPeople;
     }
-
 
     public static void main(String[] args) throws InterruptedException {
         byte[] b={0,0,1,0,0,0,1,0,0,1};

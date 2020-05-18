@@ -12,12 +12,19 @@ public class Main {
                 60L,
                 TimeUnit.SECONDS,
                 new SynchronousQueue<>());
-        Genetic gen=new Genetic(initGen.init(2000,target.length),target, 10);
+        Genetic gen=new Genetic(initGen.init(100,target.length),target, 20);
         gen.computeAdapation(thpool);
         System.out.println(gen.toSimplyString());
-        while(gen.getGen()<200){
+//        long begin,end;
+        while(gen.getGen()<30){
+//            begin=System.nanoTime();
             gen.selection(thpool);
+//            end=System.nanoTime();
+//            System.out.println(end-begin);
+//            begin=System.nanoTime();
             gen.computeAdapation(thpool);
+//            end=System.nanoTime();
+//            System.out.println(end-begin);
             System.out.println(gen.toSimplyString());
         }
     }

@@ -102,10 +102,10 @@ public class BMCompute implements Runnable {
         if(!p.hasCompute){
             compute(gen.getTarget(),p);
             p.hasCompute=true;
-            gen.addToGoodPeople(p);
+            gen.getGoodPeople().add(p);
         }
         gen.addToTotalAdaptation(p.getAdaptation());
-        gen.setMaxAdaptation(p.adaptation);
+        gen.setMaxAdaptation(p);
         count.countDown();
     }
 

@@ -1,3 +1,5 @@
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -5,7 +7,7 @@ import java.util.Objects;
  * @author 关凯宁
  * @date 2020/5/17 10:12
  */
-public class people implements Comparable{
+public class people implements Comparable<people> , Cloneable{
 
     final static int MAX_BOUND=1513;
 
@@ -96,10 +98,7 @@ public class people implements Comparable{
     }
 
     @Override
-    public int compareTo(Object o) {
-        assert o!=null;
-        assert o.getClass()==people.class;
-        people p=(people) o;
-        return Integer.compare(p.adaptation, this.adaptation);
+    public int compareTo(@NotNull people o) {
+        return Integer.compare(o.adaptation,this.adaptation);
     }
 }
