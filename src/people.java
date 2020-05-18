@@ -1,8 +1,12 @@
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * @author 关凯宁
  * @date 2020/5/17 10:12
  */
-public class people {
+public class people implements Comparable{
+
     final static int MAX_BOUND=1513;
 
     /**表达式按照次数从小到大排列*/
@@ -58,7 +62,7 @@ public class people {
             res.append("\tThis people has not been computed!");
         }
 
-        return res.append("\n").toString();
+        return res.toString();
     }
 
     @Override
@@ -66,9 +70,36 @@ public class people {
         return super.clone();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        people people = (people) o;
+        return adaptation == people.adaptation &&
+                Arrays.equals(errorSeq, people.errorSeq);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(adaptation);
+        result = 31 * result + Arrays.hashCode(errorSeq);
+        return result;
+    }
+
     public int getAdaptation(){
         assert hasCompute;
         return adaptation;
     }
 
+    @Override
+    public int compareTo(Object o) {
+        assert o!=null;
+        assert o.getClass()==people.class;
+        people p=(people) o;
+        return Integer.compare(p.adaptation, this.adaptation);
+    }
 }

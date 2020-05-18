@@ -41,7 +41,7 @@ public class BMCompute implements Runnable {
         for (int i = 0; i < s.length; i++) {
             d = false;
             for (int j = 0; j < expression.size(); j++) {
-                d ^= expression.get(j) & s[i-expression.size()+1+j];
+                d ^= expression.get(j) & s[i-j];
             }
 
             // compute f
@@ -110,10 +110,11 @@ public class BMCompute implements Runnable {
 
     public static void main(String[] args) {
         byte[] a={0,0,1,1,0,1};
-        boolean[] b=new boolean[6];
+        boolean[] b=new boolean[7];
         Arrays.fill(b,false);
         people bb=new people(b);
         compute(change(a),bb);
+        bb.hasCompute=true;
         System.out.println(bb.toString());
     }
 }

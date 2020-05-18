@@ -7,18 +7,18 @@ import java.util.Random;
  */
 public class initGen {
 
-    static LinkedList<people> init(int n){
+    static LinkedList<people> init(int n,int len){
         LinkedList<people> res=new LinkedList<>();
         Random ran=new Random(12345);
         for (int i = 0; i < n; i++) {
-            res.add(randomPeople(ran));
+            res.add(randomPeople(ran,len));
         }
         return res;
     }
 
-    private static people randomPeople(Random ran) {
-        boolean[] res=new boolean[Genetic.MAX_LENGTH];
-        for (int i = 0; i < Genetic.MAX_LENGTH; i++) {
+    private static people randomPeople(Random ran,int len) {
+        boolean[] res=new boolean[len];
+        for (int i = 0; i < len; i++) {
             res[i]=ran.nextBoolean();
         }
         return new people(res);

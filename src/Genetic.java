@@ -4,10 +4,11 @@ import java.util.concurrent.*;
 /**
  * @author 关凯宁
  * @date 2020/5/17 10:12
+ *
+ * 该Genetic类是种群类，本算法中的一切行为均是基于该类进行。
  */
 public class Genetic {
-    public static final int MAX_LENGTH = 10;
-
+    public final int PEOPLE_LENGTH;
     private int numOfPopu;
     private LinkedList<people> population;
     private int gen;
@@ -18,18 +19,19 @@ public class Genetic {
     private LinkedList<people> newPopu;
 
 
-
-    public Genetic(int numOfPopu, LinkedList<people> population, int gen, boolean[] target) {
+    public Genetic(int peopleLength, int numOfPopu, LinkedList<people> population, int gen, boolean[] target) {
+        PEOPLE_LENGTH = peopleLength;
         this.numOfPopu = numOfPopu;
         this.population = population;
         this.gen = gen;
         this.target = target;
         this.totalAdaptation=0;
         this.maxAdaptation=0;
+
     }
 
     public Genetic(LinkedList<people> population, boolean[] target) {
-        this(population.size(),population,1,target);
+        this(target.length, population.size(),population,1,target);
     }
 
     public void computeAdapation(ExecutorService es) throws InterruptedException {
@@ -53,25 +55,35 @@ public class Genetic {
         }
         newPopu = new LinkedList<>();
         CountDownLatch count=new CountDownLatch(numOfPopu);
-        Random ran=new Random(12345);
+        Random ran=new Random(System.currentTimeMillis());
         for (int i = 0; i < numOfPopu; i++) {
-            es.execute(new Select(proTable,count, ran));
+            es.execute(new Select(proTable,count, ran, this));
         }
         count.await();
         population=newPopu;
         newPopu=null;
-
         gen++;
     }
 
     @Override
     public String toString(){
         StringBuilder res=new StringBuilder("第"+gen+"代：\n");
+        res.append("全部People: \n");
         for(people p:population){
             res.append(p.toString()).append("\n");
         }
+//        res.append("good people: \n");
+//        for(people p:LinkedList){
+//            res.append(p.toString()).append("\n");
+//        }
         return res.toString();
     }
+
+//    public String toSimplyString(){
+//        StringBuilder res=new StringBuilder("第"+gen+"代：\n");
+//        res.append(LinkedList.getFirst().toString());
+//        return res.toString();
+//    }
 
     public synchronized void addPeopleTonewPopu(people p){
         newPopu.add(p);
@@ -95,6 +107,30 @@ public class Genetic {
 
     public void setTarget(boolean[] target) {
         this.target = target;
+    }
+
+    public void setTotalAdaptation(int totalAdaptation) {
+        this.totalAdaptation = totalAdaptation;
+    }
+
+    public double getAvgAdaptation() {
+        return avgAdaptation;
+    }
+
+    public void setAvgAdaptation(double avgAdaptation) {
+        this.avgAdaptation = avgAdaptation;
+    }
+
+    public int getMaxAdaptation() {
+        return maxAdaptation;
+    }
+
+    public LinkedList getNewPopu() {
+        return newPopu;
+    }
+
+    public void setNewPopu(LinkedList<people> newPopu) {
+        this.newPopu = newPopu;
     }
 
     public int getNumOfPopu() {
@@ -126,94 +162,6 @@ public class Genetic {
         }
     }
 
-    private class Select implements Runnable{
-        private final static double PC1 =0.9;
-        private final static double PC2 =0.6;
-        private final static double PM1 =0.1;
-        private final static double PM2 =0.01;
-
-        private final double[] proTable;
-        private final CountDownLatch count;
-        private final Random ran;
-        private final people[] tem;
-
-        public Select(double[] proTable, CountDownLatch count, Random ran) {
-            this.proTable = proTable;
-            this.count = count;
-            this.ran = ran;
-            this.tem=new people[2];
-        }
-
-        public void invoke(int i) {
-            double a=ran.nextDouble();
-            tem[i]=find(a,proTable);
-        }
-
-        private people find(double a, double[] proTable) {
-            int init= (int) Math.floor(a*numOfPopu);
-            while (init>=0&&proTable[init]>a){
-                if(init==0){
-                    return population.getFirst();
-                }
-                init--;
-            }
-            while(init<numOfPopu&&proTable[init]<=a){
-                if (init==numOfPopu-1){
-                    return population.getLast();
-                }
-                init++;
-            }
-            return population.get(init);
-        }
-
-        @Override
-        public void run() {
-            this.invoke(0);
-            this.invoke(1);
-            addPeopleTonewPopu(cross(tem));
-            count.countDown();
-        }
-
-        private people cross(people[] tem) {
-            people maxOne=(tem[0].getAdaptation()>tem[1].getAdaptation())?tem[0]:tem[1];
-            people res;
-            if(ran.nextDouble()<selfAdapt(maxOne)){
-                int startPoint=ran.nextInt(MAX_LENGTH);
-                int crossLength=ran.nextInt(MAX_LENGTH-startPoint-1)+1;
-                boolean[] newErrorSeq = tem[0].errorSeq.clone();
-                if (crossLength - startPoint > 0) {
-                    System.arraycopy(tem[1].errorSeq, startPoint, newErrorSeq, startPoint, crossLength - startPoint);
-                }
-                res=new people(newErrorSeq);
-            }else{
-                res=maxOne;
-            }
-            double mutatuPro=mutatu(res);
-            Random ra=new Random(ran.nextLong());
-            for (int i=0;i<MAX_LENGTH;i++) {
-                if(ra.nextDouble()<mutatuPro){
-                    res.errorSeq[i]=!res.errorSeq[i];
-                }
-            }
-            return res;
-        }
-
-        private double mutatu(people b) {
-            if(b.getAdaptation()<avgAdaptation){
-                return PM1;
-            }else{
-                return PM1-((PM1-PM2)*(maxAdaptation-b.getAdaptation())/(maxAdaptation-avgAdaptation));
-            }
-        }
-
-        private double selfAdapt(people maxOne) {
-            if(maxOne.getAdaptation()<avgAdaptation){
-                return PC1;
-            }else{
-                return PC1-((PC1-PC2)*(maxOne.getAdaptation()-avgAdaptation)/(maxAdaptation-avgAdaptation));
-            }
-        }
-    }
 
     public static void main(String[] args) throws InterruptedException {
         byte[] b={0,0,1,0,0,0,1,0,0,1};
@@ -221,12 +169,14 @@ public class Genetic {
                 Integer.MAX_VALUE,
                 60L,
                 TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>());
-        Genetic a=new Genetic(initGen.init(10),BMCompute.change(b));
+                new SynchronousQueue<>());
+        Genetic a=new Genetic(initGen.init(100,b.length),BMCompute.change(b));
         a.computeAdapation(thpool);
         System.out.println(a.toString());
-        a.selection(thpool);
-        a.computeAdapation(thpool);
-        System.out.println(a.toString());
+        for (int i = 0; i < 20; i++) {
+            a.selection(thpool);
+            a.computeAdapation(thpool);
+            System.out.println(a.toString());
+        }
     }
 }
