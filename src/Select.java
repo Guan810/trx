@@ -10,8 +10,6 @@ import java.util.concurrent.CountDownLatch;
 public class Select implements Runnable{
     private final static double PC1 =0.9;
     private final static double PC2 =0.6;
-    private final static double PM1 =0.1;
-    private final static double PM2 =0.01;
 
     private final double[] proTable;
     private final CountDownLatch count;
@@ -19,10 +17,10 @@ public class Select implements Runnable{
     private final people[] tem;
     private final Genetic gen;
 
-    public Select(double[] proTable, CountDownLatch count, Random ran, Genetic gen) {
+    public Select(double[] proTable, CountDownLatch count, Genetic gen) {
         this.proTable = proTable;
         this.count = count;
-        this.ran = ran;
+        this.ran = new Random(System.currentTimeMillis());
         this.gen = gen;
         this.tem=new people[2];
     }
@@ -47,10 +45,12 @@ public class Select implements Runnable{
 
     @Override
     public void run() {
+        //轮盘赌取出个体
         double a=ran.nextDouble();
         tem[0]=find(a,proTable);
         a=ran.nextDouble();
         tem[1]=find(a,proTable);
+        //交叉
         try {
             cross(tem);
         } catch (CloneNotSupportedException e) {
@@ -72,14 +72,6 @@ public class Select implements Runnable{
             gen.addPeopleTonewPopu(maxOne);
         }
 
-    }
-
-    private double mutatu(people b) {
-        if(b.getAdaptation()<gen.getAvgAdaptation()){
-            return PM1;
-        }else{
-            return PM1-((PM1-PM2)*(gen.getBestPeople().getAdaptation()-b.getAdaptation())/(gen.getBestPeople().getAdaptation()-gen.getAvgAdaptation()));
-        }
     }
 
     private double selfAdapt(people maxOne) {

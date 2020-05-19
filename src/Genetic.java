@@ -32,7 +32,7 @@ public class Genetic {
     /**备用列表*/
     private LinkedList<people> newPopu;
 
-    public Genetic(int peopleLength,  LinkedList<people> population, int gen, boolean[] target, int goodPeopleLast) {
+    public Genetic(int peopleLength,  LinkedList<people> population, int gen, boolean[] target, int goodPeopleLast){
         PEOPLE_LENGTH = peopleLength;
         this.population = population;
         this.gen = gen;
@@ -40,6 +40,16 @@ public class Genetic {
         this.totalAdaptation=0;
         this.bestPeople=null;
         goodPeople=new GoodPeople(goodPeopleLast);
+        boolean[] standran=new boolean[PEOPLE_LENGTH];
+        Arrays.fill(standran,false);
+        bestPeople=new people(standran);
+        CountDownLatch count=new CountDownLatch(1);
+        new Thread(new BMCompute(this,bestPeople,count)).start();
+        try {
+            count.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public Genetic(LinkedList<people> population, boolean[] target, int goodPeopleLast) {
@@ -50,13 +60,13 @@ public class Genetic {
     /**
      * 一个种群整体进行BM算法的方法，采用多线程
      */
-    @SuppressWarnings("可能存在未知问题")
     public void computeAdapation(ExecutorService es) throws InterruptedException {
         CountDownLatch count=new CountDownLatch(population.size());
         for(people p:population){
             es.execute(new BMCompute(this,p,count));
         }
         count.await();
+        goodPeople.addAll(population);
         avgAdaptation=(double)totalAdaptation/population.size();
     }
 
@@ -76,14 +86,21 @@ public class Genetic {
         }
         newPopu = new LinkedList<>();
         CountDownLatch count=new CountDownLatch(population.size()-goodPeople.size());
-        Random ran=new Random(System.currentTimeMillis());
         for (int i = 0; i < population.size()-goodPeople.size(); i++) {
-            es.execute(new Select(proTable,count, ran, this));
+            es.execute(new Select(proTable,count, this));
         }
         count.await();
         population=newPopu;
         newPopu=null;
         population.addAll(goodPeople);
+    }
+
+    public void mutatu(ExecutorService es) throws InterruptedException {
+        CountDownLatch count=new CountDownLatch(population.size());
+        for (people i:population) {
+            es.execute(new Mutatu(this,i,count));
+        }
+        count.await();
         gen++;
     }
 
@@ -182,9 +199,13 @@ public class Genetic {
         this.gen = gen;
     }
 
-    public synchronized void setBestPeople(people bestPeople) {
+    public synchronized void setBestPeople(people bestPeople){
         if(this.bestPeople==null||bestPeople.getAdaptation()>this.bestPeople.getAdaptation()){
-            this.bestPeople = bestPeople;
+            try {
+                this.bestPeople = (people) bestPeople.clone();
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
         }
     }
 

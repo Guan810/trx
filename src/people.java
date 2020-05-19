@@ -2,6 +2,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.TreeSet;
 
 /**
  * @author 关凯宁
@@ -41,11 +42,11 @@ public class people implements Comparable<people> , Cloneable{
     public String toString(){
         StringBuilder res;
         if(hasCompute){
-            res = new StringBuilder("Complex = " + complex + "\tError = " + error + "\t");
+            res = new StringBuilder("Complex = " + complex + "\t Error = " + error + "\t Adaptation = "+adaptation);
         }else{
             res = new StringBuilder("Complex = " + complex + "\t");
         }
-        res.append("errorSeq: \t");
+        res.append("\t errorSeq: ");
         for (boolean i:this.errorSeq){
             if(i){
                 res.append(1).append(" ");
@@ -54,7 +55,7 @@ public class people implements Comparable<people> , Cloneable{
             }
         }
         if(hasCompute){
-            res.append("\texpression: \t");
+            res.append("\t expression: ");
             for(boolean i:this.expression){
                 if(i){
                     res.append(1).append(" ");
@@ -66,6 +67,16 @@ public class people implements Comparable<people> , Cloneable{
             res.append("\tThis people has not been computed!");
         }
 
+        return res.toString();
+    }
+
+    public String toSimplyString(){
+        StringBuilder res;
+        if(hasCompute){
+            res = new StringBuilder("Complex = " + complex + "\t Error = " + error + "\t Adaptation = "+adaptation);
+        }else{
+            res = new StringBuilder("Complex = " + complex + "\t");
+        }
         return res.toString();
     }
 
@@ -101,6 +112,36 @@ public class people implements Comparable<people> , Cloneable{
 
     @Override
     public int compareTo(@NotNull people o) {
-        return Integer.compare(o.adaptation,this.adaptation);
+        int res=o.adaptation-this.adaptation;
+        int num= (res==0)?o.error-this.error:res;
+        return num==0 ?o.complex-this.complex:num;
     }
+
+    public static void main(String[] args) {
+        boolean[] o={};
+        boolean[] a={true};
+        boolean[] b={true,true};
+        boolean[] c={true,true,true};
+        people a1=new people(o);
+        people a2=new people(b);
+        people a3=new people(a);
+        people a4=new people(o);
+        a1.adaptation=1508;
+        a2.adaptation=1505;
+        a3.adaptation=1507;
+        a4.adaptation=1508;
+        a1.hasCompute=true;
+        a2.hasCompute=true;
+        a3.hasCompute=true;
+        a4.hasCompute=true;
+        TreeSet<people> tree=new TreeSet<>();
+        tree.add(a3);
+        tree.add(a1);
+        tree.add(a4);
+        tree.add(a2);
+        for(people p: tree){
+            System.out.println(p.toSimplyString());
+        }
+    }
+
 }

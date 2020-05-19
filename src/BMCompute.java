@@ -103,7 +103,7 @@ public class BMCompute implements Runnable {
         if(!p.hasCompute){
             compute(gen.getTarget().clone(),p);
             p.hasCompute=true;
-            gen.getGoodPeople().add(p);
+//            gen.getGoodPeople().add(p);
             gen.setBestPeople(p);
         }
         gen.addToTotalAdaptation(p.getAdaptation());

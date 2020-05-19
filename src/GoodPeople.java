@@ -1,3 +1,4 @@
+import java.util.Collection;
 import java.util.TreeSet;
 
 /**
@@ -15,12 +16,24 @@ public class GoodPeople extends TreeSet<people> {
 
     @Override
     public synchronized boolean add(people people) {
-        boolean res= super.add(people);
-        if(this.size()>size){
-            this.pollLast();
-            res=false;
+            boolean res=false;
+            if(size()<size){
+                res = super.add(people);
+            }else if(people.adaptation>this.last().adaptation){
+                res = super.add(people);
+                if(this.size()>size){
+                    this.pollLast();
+                }
+            }
+            return res;
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends people> c) {
+        boolean res= super.addAll(c);
+        while(size()>=size){
+            pollLast();
         }
         return res;
     }
-
 }

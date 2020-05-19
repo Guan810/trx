@@ -15,9 +15,10 @@ public class Main {
                 new LinkedBlockingDeque<>());
         Genetic gen=new Genetic(initGen.init(10000,target.length),target, 10);
         gen.computeAdapation(thpool);
-        System.out.println(gen.toString());
+        System.out.println(gen.toSimplyString());
         while(gen.getGen()<300){
             gen.selection(thpool);
+            gen.mutatu(thpool);
             gen.computeAdapation(thpool);
             System.out.println(gen.toSimplyString());
         }
