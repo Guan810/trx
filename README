@@ -1,3 +1,17 @@
-**待解决的问题**
-- **关于Genetic和BMCompute计算结果不同的问题**
-- 执行顺序的情况，尤其是执行BM算法的时机，是在生成时计算呢还是再找另一个时间计算
+本算法基于遗传算法，并加入了一些适应于二进制的方法
+
+[原版论文:计算周期序列k-错线性复杂度的混合遗传算法](https://kns.cnki.net/KCMS/detail/31.1466.U.20200408.1705.001.html?uid=WEEvREcwSlJHSldRa1Fhb09pSnNwL2hhWEtTZnFoNUlKVEpZZnhzT0Q5Zz0=$9A4hF_YAuvQ5obgVAqNKPCYcEjKensW4ggI8Fm4gTkoUKaID8j8gFw!!&v=MTQwNjJxZForWnFGeURsVnIvT0lsbz1OaVhCZXJHNEhOSE1xNDlOWk9zUFl3OU16bVJuNmo1N1QzZmxxV00wQ0xMN1I3)
+
+遗传算法在计算该问题上的难点有两个
+1. 随机种群的生成
+2. 种群大小
+
+事实上，由于缺乏理论依据，对于一个好的k错序列错误序列$S_{good}$而言，与其相似的错误序列不见得是一个很好的错误序列。
+在某种程度上，这个算法近似于随机搜索算法。
+
+另一方面，对于一个较长序列————比如64————而言，其所有可能的错误序列就有$2^64$个，总的种群过大使得随机生成时只能选取错误值k较小的一些序列。
+实际应用中可能更好一些，但对于比赛来说，可以适当扩大k值来达到更小的综合评分。
+
+综上而言，该算法尝试失败。
+
+至少手写了一遍遗传算法，不亏不亏
