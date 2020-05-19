@@ -101,7 +101,7 @@ public class BMCompute implements Runnable {
     @Override
     public void run() {
         if(!p.hasCompute){
-            compute(gen.getTarget(),p);
+            compute(gen.getTarget().clone(),p);
             p.hasCompute=true;
             gen.getGoodPeople().add(p);
             gen.setBestPeople(p);
@@ -110,35 +110,37 @@ public class BMCompute implements Runnable {
         count.countDown();
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         ThreadPoolExecutor thpool=new ThreadPoolExecutor(100,
                 500,
                 60L,
                 TimeUnit.SECONDS,
                 new LinkedBlockingDeque<>());
         byte[] a={0,0,0,0,1,1,1,0,1,0};
-        String s="0 0 0 0 0 0 0 0 0 1";
+        String s="0 0 0 0 0 0 0 0 0 0";
         String[] ss=s.split(" ");
         byte[] b=new byte[ss.length];
         for (int i = 0; i < ss.length; i++) {
             b[i]=Byte.parseByte(ss[i]);
         }
-        people bb=new people(change(b));
-        LinkedList<people> in=new LinkedList<>();
+        people bc=new people(change(b));
+        LinkedList<people> in=initGen.init(10,10);
         Genetic gen=new Genetic(in,change(a), 10);
 //        Genetic gen=new Genetic(initGen.init(1000,10),change(a), 10);
-//        in.add(bb);
+        in.add(bc);
 //        gen.computeAdapation(thpool);
-        System.out.println(gen.toSimplyString());
+        System.out.println(gen.toString());
 //        bb=gen.getBestPeople();
-        if(!bb.hasCompute){
-            compute(gen.getTarget(),bb);
-            bb.hasCompute=true;
-            gen.getGoodPeople().add(bb);
-            gen.setBestPeople(bb);
+        for (people bb:in){
+            if(!bb.hasCompute){
+                compute(gen.getTarget().clone(),bb);
+                bb.hasCompute=true;
+                gen.getGoodPeople().add(bb);
+                gen.setBestPeople(bb);
+            }
+            gen.addToTotalAdaptation(bb.getAdaptation());
         }
-        gen.addToTotalAdaptation(bb.getAdaptation());
-        System.out.println(bb.toString());
+        System.out.println(gen.toString());
     }
 }
 
