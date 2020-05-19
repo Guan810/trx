@@ -17,7 +17,7 @@ public class Genetic {
     /**
      * 添加一个TreeSet来维护适应度较大的个体，同时便于输出
      */
-    private final GoodPeople goodPeople;
+    private TreeSet<people> goodPeople;
     /**
      * 当前种群的所有个体集合
      */
@@ -26,20 +26,20 @@ public class Genetic {
      * 当前种群的代数
      */
     private int gen;
+    private final int showNum;
     private int totalAdaptation;
     private double avgAdaptation;
     private people bestPeople;
-    /**备用列表*/
-    private LinkedList<people> newPopu;
 
-    public Genetic(int peopleLength,  LinkedList<people> population, int gen, boolean[] target, int goodPeopleLast){
+    public Genetic(int peopleLength,  LinkedList<people> population, int gen, boolean[] target, int showNum){
         PEOPLE_LENGTH = peopleLength;
         this.population = population;
         this.gen = gen;
+        this.showNum=showNum;
         this.target = target;
         this.totalAdaptation=0;
         this.bestPeople=null;
-        goodPeople=new GoodPeople(goodPeopleLast);
+        goodPeople= new TreeSet<>();
         boolean[] standran=new boolean[PEOPLE_LENGTH];
         Arrays.fill(standran,false);
         bestPeople=new people(standran);
@@ -52,8 +52,8 @@ public class Genetic {
         }
     }
 
-    public Genetic(LinkedList<people> population, boolean[] target, int goodPeopleLast) {
-        this(target.length, population,1,target, goodPeopleLast);
+    public Genetic(LinkedList<people> population, boolean[] target, int showNum) {
+        this(target.length, population,1,target, showNum);
     }
 
 
@@ -61,6 +61,8 @@ public class Genetic {
      * 一个种群整体进行BM算法的方法，采用多线程
      */
     public void computeAdapation(ExecutorService es) throws InterruptedException {
+        goodPeople.clear();
+        setTotalAdaptationToZero();
         CountDownLatch count=new CountDownLatch(population.size());
         for(people p:population){
             es.execute(new BMCompute(this,p,count));
@@ -74,25 +76,19 @@ public class Genetic {
      * 选择与交叉函数
      */
     public void selection(ExecutorService es) throws InterruptedException {
-        setTotalAdaptationToZero();
-        double[] proTable=new double[population.size()];
-        for (int i = 0; i < population.size(); i++) {
-            people temp=population.get(0);
-            if(i==0){
-                proTable[0]=(double) temp.getAdaptation()/totalAdaptation;
-            }else{
-                proTable[i]=proTable[i-1]+(double) temp.getAdaptation()/totalAdaptation;
-            }
-        }
-        newPopu = new LinkedList<>();
-        CountDownLatch count=new CountDownLatch(population.size()-goodPeople.size());
-        for (int i = 0; i < population.size()-goodPeople.size(); i++) {
-            es.execute(new Select(proTable,count, this));
+        population.clear();
+        CountDownLatch count=new CountDownLatch(goodPeople.size());
+        Random ran=new Random(System.currentTimeMillis());
+        for (int i = 0; i < goodPeople.size(); i++) {
+            es.execute(new Select(count, this,ran));
         }
         count.await();
-        population=newPopu;
-        newPopu=null;
-        population.addAll(goodPeople);
+//        for (people p:goodPeople){
+//            population.add(p);
+//            if(population.size()==goodPeople.size()){
+//                break;
+//            }
+//        }
     }
 
     public void mutatu(ExecutorService es) throws InterruptedException {
@@ -106,26 +102,22 @@ public class Genetic {
 
     @Override
     public String toString(){
-        StringBuilder res=new StringBuilder("第"+gen+"代：\n");
+        StringBuilder res=new StringBuilder("第"+gen+"代：  共有"+goodPeople.size()+"\n");
         res.append("最好的一个：\n");
         if(this.bestPeople==null){
             res.append("Threre is no best now. This gen has just been built!\n");
         }else{
             res.append(this.bestPeople.toString()).append("\n");
         }
-        res.append("good people: \n");
+        res.append("全部: \n");
         for(people p:goodPeople){
-            res.append(p.toString()).append("\n");
-        }
-        res.append("全部People: \n");
-        for(people p:population){
             res.append(p.toString()).append("\n");
         }
         return res.toString();
     }
 
     public String toSimplyString(){
-        StringBuilder res=new StringBuilder("第"+gen+"代：\n");
+        StringBuilder res=new StringBuilder("第"+gen+"代：  共有"+goodPeople.size()+"  总适应度为"+totalAdaptation+"\n");
         res.append("最好的一个：\n");
         if(this.bestPeople==null){
             res.append("Threre is no best now. This gen has just been built!\n");
@@ -133,18 +125,26 @@ public class Genetic {
             res.append(this.bestPeople.toString()).append("\n");
         }
         res.append("good people: \n");
+        int i=0;
         for(people p:goodPeople){
             res.append(p.toString()).append("\n");
+            if(i++>=showNum){
+                break;
+            }
         }
         return res.toString();
     }
 
-    public synchronized void addPeopleTonewPopu(people p){
-        newPopu.add(p);
+    public TreeSet<people> getGoodPeople() {
+        return goodPeople;
     }
 
     public void setTotalAdaptationToZero() {
         this.totalAdaptation = 0;
+    }
+
+    public synchronized void addPeopleToPopu(people p){
+        this.population.add(p);
     }
 
     public synchronized void addToTotalAdaptation(int totalAdaptation) {
@@ -175,14 +175,6 @@ public class Genetic {
         return bestPeople;
     }
 
-    public LinkedList<people> getNewPopu() {
-        return newPopu;
-    }
-
-    public void setNewPopu(LinkedList<people> newPopu) {
-        this.newPopu = newPopu;
-    }
-
     public LinkedList<people> getPopulation() {
         return population;
     }
@@ -209,7 +201,7 @@ public class Genetic {
         }
     }
 
-    public GoodPeople getGoodPeople() {
+    public TreeSet<people> getTreeSet() {
         return goodPeople;
     }
 

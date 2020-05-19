@@ -8,8 +8,8 @@ import java.util.concurrent.CountDownLatch;
  * 变异线程
  */
 public class Mutatu implements Runnable{
-    private final static double PM1 =0.1;
-    private final static double PM2 =0.01;
+    private final static double PM1 =0.2;
+    private final static double PM2 =0.02;
 
     private final Genetic gen;
     private final people p;

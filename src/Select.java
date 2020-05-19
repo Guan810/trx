@@ -11,45 +11,37 @@ public class Select implements Runnable{
     private final static double PC1 =0.9;
     private final static double PC2 =0.6;
 
-    private final double[] proTable;
     private final CountDownLatch count;
     private final Random ran;
     private final people[] tem;
     private final Genetic gen;
 
-    public Select(double[] proTable, CountDownLatch count, Genetic gen) {
-        this.proTable = proTable;
+    public Select(CountDownLatch count, Genetic gen,Random ran) {
         this.count = count;
-        this.ran = new Random(System.currentTimeMillis());
+        this.ran = ran;
         this.gen = gen;
         this.tem=new people[2];
     }
 
-    private people find(double a, double[] proTable) {
-        int init= (int) Math.floor(a*gen.getPopulation().size());
-        while (init>=0&&proTable[init]>a){
-            if(init==0){
-                return gen.getPopulation().getFirst();
+    private people find(double a) {
+        double count=0;
+        for (people p:gen.getGoodPeople()){
+            if(count>a){
+                return p;
             }
-            init--;
+            count+=p.adaptation;
         }
-        while(init<gen.getPopulation().size()&&proTable[init]<=a){
-            if (init==gen.getPopulation().size()-1){
-                return gen.getPopulation().getLast();
-            }
-            init++;
-        }
-        return gen.getPopulation().get(init);
+        return gen.getGoodPeople().last();
     }
 
 
     @Override
     public void run() {
         //轮盘赌取出个体
-        double a=ran.nextDouble();
-        tem[0]=find(a,proTable);
-        a=ran.nextDouble();
-        tem[1]=find(a,proTable);
+        double a=ran.nextDouble()*(double) gen.getTotalAdaptation();
+        tem[0]=find(a);
+        a=ran.nextDouble()*(double)gen.getTotalAdaptation();
+        tem[1]=find(a);
         //交叉
         try {
             cross(tem);
@@ -67,9 +59,9 @@ public class Select implements Runnable{
             people newTem0= (people) tem[0].clone();
             System.arraycopy(tem[1].errorSeq, startPoint, newTem0.errorSeq, startPoint, crossLength);
             newTem0.hasCompute=false;
-            gen.addPeopleTonewPopu(newTem0);
+            gen.addPeopleToPopu(newTem0);
         }else{
-            gen.addPeopleTonewPopu(maxOne);
+            gen.addPeopleToPopu(maxOne);
         }
 
     }
@@ -83,6 +75,10 @@ public class Select implements Runnable{
     }
 
     public static void main(String[] args) {
-
+        Random ran=new Random(System.currentTimeMillis());
+        for (int i = 0; i < 100; i++) {
+            System.out.println(ran.nextDouble());
+        }
     }
+
 }

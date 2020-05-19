@@ -1,5 +1,6 @@
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.TreeSet;
 
 /**
  * @author 关凯宁
@@ -9,15 +10,16 @@ import java.util.Random;
 public class initGen {
 
     static LinkedList<people> init(int n,int len){
-        LinkedList<people> res=new LinkedList<>();
         Random ran=new Random(System.currentTimeMillis());
+        LinkedList<people> res=new LinkedList<>();
         for (int i = 0; i < n; i++) {
-            res.add(randomPeople(ran,len));
+            res.add(randomPeople(len,ran));
         }
         return res;
     }
 
-    private static people randomPeople(Random ran,int len) {
+    private static people randomPeople(int len,Random ra) {
+        Random ran=new Random(System.currentTimeMillis()<<ra.nextInt(31));
         boolean[] res=new boolean[len];
         for (int i = 0; i < len; i++) {
             res[i]=ran.nextBoolean();
@@ -25,11 +27,4 @@ public class initGen {
         return new people(res);
     }
 
-    public static void main(String[] args) {
-        Random a=new Random(12345);
-        for (int i = 0; i < 50; i++) {
-            System.out.println(a.nextInt(2));
-        }
-
-    }
 }

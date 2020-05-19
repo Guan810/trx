@@ -16,7 +16,7 @@ public class Main {
         Genetic gen=new Genetic(initGen.init(10000,target.length),target, 10);
         gen.computeAdapation(thpool);
         System.out.println(gen.toSimplyString());
-        while(gen.getGen()<300){
+        while(gen.getGen()<100){
             gen.selection(thpool);
             gen.mutatu(thpool);
             gen.computeAdapation(thpool);
@@ -25,11 +25,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        byte[] a={0,0,0,0,1,1,1,0,1,0};
-        try {
-            run(BMCompute.change(a));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        
     }
 }

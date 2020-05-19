@@ -114,7 +114,7 @@ public class people implements Comparable<people> , Cloneable{
     public int compareTo(@NotNull people o) {
         int res=o.adaptation-this.adaptation;
         int num= (res==0)?o.error-this.error:res;
-        return num==0 ?o.complex-this.complex:num;
+        return (num==0)?1:num;
     }
 
     public static void main(String[] args) {
